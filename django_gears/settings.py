@@ -1,6 +1,6 @@
 from django.conf import settings
 from gears.environment import Environment, DEFAULT_PUBLIC_ASSETS
-from .utils import get_cache, get_finder, get_asset_handler
+from .utils import get_cache, get_finder, get_asset_handler, get_processors_settings
 
 
 DEFAULT_CACHE = 'gears.cache.SimpleCache'
@@ -58,18 +58,12 @@ for extension, path in getattr(settings, 'GEARS_COMPILERS', {}).items():
     environment.compilers.register(extension, get_asset_handler(path, options))
 
 preprocessors = getattr(settings, 'GEARS_PREPROCESSORS', DEFAULT_PREPROCESSORS)
-for mimetype, paths in preprocessors.items():
-    if not isinstance(paths, (list, tuple)):
-        paths = [paths]
-    for path in paths:
-        environment.preprocessors.register(mimetype, get_asset_handler(path))
+for mimetype, path, options in get_processors_settings(preprocessors):
+    environment.preprocessors.register(mimetype, get_asset_handler(path, options))
 
 postprocessors = getattr(settings, 'GEARS_POSTPROCESSORS', {})
-for mimetype, paths in postprocessors.items():
-    if not isinstance(paths, (list, tuple)):
-        paths = [paths]
-    for path in paths:
-        environment.postprocessors.register(mimetype, get_asset_handler(path))
+for mimetype, path, options in get_processors_settings(postprocessors):
+    environment.postprocessors.register(mimetype, get_asset_handler(path, options))
 
 compressors = getattr(settings, 'GEARS_COMPRESSORS', {})
 for mimetype, path in compressors.items():

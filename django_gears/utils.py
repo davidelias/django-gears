@@ -30,6 +30,25 @@ def _get_object(path):
     return _cache[path]
 
 
+def get_processors_settings(processors):
+    for mimetype, paths in processors.items():
+        if not isinstance(paths, (list, tuple)):
+            paths = [paths]
+        modules = {}
+        for path in paths:
+            if isinstance(path, dict):
+                modules[modules.keys()[0]] = path
+                break
+
+            if isinstance(path, (list, tuple)):
+                path, options = path
+                modules[path] = options
+            else:
+                modules[path] = None
+        for path, options in modules.items():
+            yield mimetype, path, options
+
+
 def get_cache(path, options=None):
     cls = _get_object(path)
     return cls(**(options or {}))
